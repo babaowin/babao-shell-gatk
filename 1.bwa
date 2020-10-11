@@ -1,0 +1,10 @@
+#!/bin/bash
+cpus=1
+genomeFile=${HOME}/wes_project/database/human/hg19/forGATK/genome.fa
+for idSample in Breast Coad Lung Normal
+do
+readGroup="@RG\\tID:niID\\tPU:noPU\\tSM:${idSample}\\tLB:${idSample}\\tPL:illumina"
+fastqFile1=${idSample}_1.fastq.gz
+fastqFile2=${idSample}_2.fastq.gz
+bwa mem -t ${cpus} -M -R ${readGroup} ${genomeFile} ${fastqFile1} ${fastqFile2} | samtools sort --threads ${cpus} -m 1G - >${idSample}.bam
+done

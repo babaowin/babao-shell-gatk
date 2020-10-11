@@ -1,0 +1,32 @@
+#!/bin/bash
+for idSample in Breast Coad Lung
+do
+bamTumor=${idSample}.recal.bam
+idSampleTumor=${idSample}
+bamNormal=Normal.recal.bam
+idSampleNormal=Normal
+genomeFile=${HOME}/wes_project/database/human/hg19/forGATK/genome.fa
+intervals=${HOME}/wes_project/database/human/hg19/forGATK/haplox-hg19-chr17.bed
+
+
+gatk Mutect2 \
+    -R ${genomeFile} \
+    -I ${bamTumor}  -tumor ${idSampleTumor} \
+    -I ${bamNormal} -normal ${idSampleNormal} \
+    -L ${intervals} \
+    -O ${idSampleTumor}_vs_${idSampleNormal}.vcf
+        
+        
+        
+gatk FilterMutectCalls \
+    -R ${genomeFile} \
+    -V ${idSampleTumor}_vs_${idSampleNormal}.vcf \
+    -O ${idSampleTumor}.somatic.filter_mark.vcf.gz
+
+
+gatk  SelectVariants \
+    -R ${genomeFile} \
+    -V ${idSampleTumor}.somatic.filter_mark.vcf.gz \
+    -select "vc.isNotFiltered()" \
+    -O ${idSampleTumor}_vs_${idSampleNormal}.filter.vcf
+done

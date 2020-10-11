@@ -1,0 +1,28 @@
+#!/bin/bash
+intervals=${HOME}/wes_project/database/human/hg19/forGATK/haplox-hg19-chr17.bed
+dbsnp=${HOME}/wes_project/database/human/hg19/forGATK/dbsnp_138.hg19.vcf
+indel=${HOME}/wes_project/database/human/hg19/forGATK/1000G_phase1.indels.hg19.vcf
+genomeFile=${HOME}/wes_project/database/human/hg19/forGATK/genome.fa
+
+for idSample in Breast Coad Lung Normal
+do
+
+gatk  MarkDuplicates \
+-I    ${idSample}.bam \
+-M    ${idSample}.bam.metrcs\
+-O    ${idSample}.md.bam
+
+
+gatk    BaseRecalibrator \
+        -I ${idSample}.md.bam \
+        -O ${idSample}.recal.table \
+        -R ${genomeFile} \
+        --known-sites ${dbsnp} \
+        --known-sites ${indel} 
+        
+gatk    ApplyBQSR \
+        -R ${genomeFile} \
+        -I ${idSample}.md.bam \
+        -O ${idSample}.recal.bam \
+        --bqsr-recal-file ${idSample}.recal.table
+done
